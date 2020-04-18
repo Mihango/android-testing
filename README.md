@@ -3,6 +3,8 @@ TO-DO Notes - Code for 5.1-5.3 Testing Codelab
 
 Code for the Advanced Android Kotlin Testing Codelab 5.1-5.3
 
+![References Google Codelab for Android Testing](https://codelabs.developers.google.com/codelabs/advanced-android-kotlin-training-testing-basics)
+
 Introduction
 ------------
 
