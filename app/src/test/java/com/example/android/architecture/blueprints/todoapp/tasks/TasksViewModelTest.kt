@@ -20,10 +20,15 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -39,6 +44,8 @@ class TasksViewModelTest {
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
+    private val testDispatcher = TestCoroutineDispatcher()
+
     @Before
     fun setupViewModel() {
         // We initialise the tasks to 3, with one active and two completed
@@ -49,6 +56,15 @@ class TasksViewModelTest {
         tasksRepository.addTasks(task1, task2, task3)
 
         tasksViewModel = TasksViewModel(tasksRepository)
+
+        // provide the scope explicitly, in this example using a constructor parameter
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun cleanUp() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
     }
 
 
@@ -73,15 +89,12 @@ class TasksViewModelTest {
     }
 
     @Test
-    fun loadAllTasks_updatesItemList() = runBlockingTest {
-
-        // WHEN Refresh
-        tasksViewModel.loadTasks(false)
-        // check init is call with tasks as Filter ALL
-        // THEN
-        tasksViewModel.empty.getOrAwaitValue()
-        tasksViewModel.items.getOrAwaitValue()
-
+    fun updateFilterToCompleted_showOnlyCompletedTasks() = runBlockingTest {
+        // WHEN
+        tasksViewModel.setFiltering(TasksFilterType.COMPLETED_TASKS)
+        val data = tasksViewModel.items.getOrAwaitValue()
+        assertThat(data.size, `is`(2))
+        assertThat(data[0].isCompleted, `is`(true))
     }
 
 }
