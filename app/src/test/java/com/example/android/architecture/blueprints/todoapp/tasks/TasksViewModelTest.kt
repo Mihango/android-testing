@@ -20,12 +20,15 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@ExperimentalCoroutinesApi
 class TasksViewModelTest {
 
     // Subject under test
@@ -67,6 +70,18 @@ class TasksViewModelTest {
 
         // Then the "Add task" action is visible
         assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue(), `is`(true))
+    }
+
+    @Test
+    fun loadAllTasks_updatesItemList() = runBlockingTest {
+
+        // WHEN Refresh
+        tasksViewModel.loadTasks(false)
+        // check init is call with tasks as Filter ALL
+        // THEN
+        tasksViewModel.empty.getOrAwaitValue()
+        tasksViewModel.items.getOrAwaitValue()
+
     }
 
 }
